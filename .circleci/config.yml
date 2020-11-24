@@ -48,6 +48,11 @@ executors:
       - image: electron.azurecr.io/build:6555a80939fb4c3ddf9343b3f140e573f40de225
     resource_class: << parameters.size >>
 
+  linux-arm:
+    machine:
+      image: ubuntu-2004:202101-0
+    resource_class: arm.medium    
+
   macos:
     parameters:
       size:
@@ -1878,7 +1883,7 @@ jobs:
       GCLIENT_EXTRA_ARGS: '--custom-var=checkout_arm=True --custom-var=checkout_arm64=True'
     steps:
       - electron-build:
-          persist: false
+          persist: true
           checkout: true
           use-out-cache: false
 
@@ -1930,7 +1935,7 @@ jobs:
       GCLIENT_EXTRA_ARGS: '--custom-var=checkout_arm=True --custom-var=checkout_arm64=True'
     steps:
       - electron-build:
-          persist: false
+          persist: true
           checkout: true
           use-out-cache: false
 
@@ -2292,6 +2297,22 @@ jobs:
       <<: *env-headless-testing
       <<: *env-send-slack-notifications
     <<: *steps-verify-ffmpeg
+
+  linux-arm-testing-tests:
+    <<: *machine-linux-arm
+    environment:
+      <<: *env-linux-medium
+      <<: *env-headless-testing
+      <<: *env-stack-dumping
+    <<: *steps-tests
+
+  linux-arm64-testing-tests:
+    <<: *machine-linux-arm
+    environment:
+      <<: *env-linux-medium
+      <<: *env-headless-testing
+      <<: *env-stack-dumping
+    <<: *steps-tests
 
   osx-testing-x64-tests:
     executor:
