@@ -219,7 +219,7 @@ step-maybe-cleanup-arm64-mac: &step-maybe-cleanup-arm64-mac
         killall Safari || echo "No Safari processes left running"
         rm -rf ~/Library/Application\ Support/Electron*
         rm -rf ~/Library/Application\ Support/electron*
-      elif if  [ "$TARGET_ARCH" == "arm" ]  || [ "$TARGET_ARCH" == "arm64" ]; then
+      elif [ "$TARGET_ARCH" == "arm" ]  || [ "$TARGET_ARCH" == "arm64" ]; then
         pkill Xvfb
         pkill electron
       fi
@@ -1226,8 +1226,13 @@ steps-tests: &steps-tests
           else
             if [ "$TARGET_ARCH" == "arm" ] || [ "$TARGET_ARCH" == "arm64" ]; then
               export ELECTRON_SKIP_NATIVE_MODULE_TESTS=true
-              (cd electron && node script/yarn test --runners=main --trace-uncaught --enable-logging --disable-features=PartitionAllocPCScanStackScanning)
-              (cd electron && node script/yarn test --runners=remote --trace-uncaught --enable-logging --disable-features=PartitionAllocPCScanStackScanning)
+              if [ "$TARGET_ARCH" == "arm" ]; then
+                (cd electron && node script/yarn test --runners=main --trace-uncaught --enable-logging --disable-features=PartitionAllocPCScan,PartitionAllocPCScanBrowserOnly,PartitionAllocPCScanStackScanning)
+                (cd electron && node script/yarn test --runners=remote --trace-uncaught --enable-logging --disable-features=PartitionAllocPCScan,PartitionAllocPCScanBrowserOnly,PartitionAllocPCScanStackScanning)
+              else
+                (cd electron && node script/yarn test --runners=main --trace-uncaught --enable-logging --disable-features=PartitionAllocPCScan,PartitionAllocPCScanBrowserOnly,PartitionAllocPCScanStackScanning)
+                (cd electron && node script/yarn test --runners=remote --trace-uncaught --enable-logging --disable-features=PartitionAllocPCScan,PartitionAllocPCScanBrowserOnly,PartitionAllocPCScanStackScanning)
+              fi
             else
               (cd electron && node script/yarn test --runners=main --trace-uncaught --enable-logging --files $(circleci tests glob spec-main/*-spec.ts | circleci tests split --split-by=timings))
               (cd electron && node script/yarn test --runners=remote --trace-uncaught --enable-logging --files $(circleci tests glob spec/*-spec.js | circleci tests split --split-by=timings))
