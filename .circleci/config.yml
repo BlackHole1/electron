@@ -1044,19 +1044,19 @@ step-maybe-install-deps: &step-maybe-install-deps
         sudo apt-get update 
         DEBIAN_FRONTEND=noninteractive sudo apt-get install -y \
           gperf \
-          libasound2 \
-          libasound2-dev \
+          libasound2:armhf \
+          libasound2-dev:armhf \
           libc6:armhf \
-          libcap-dev \
-          libcups2-dev \
-          libdbus-1-dev \
-          libgtk2.0-dev \
-          libgtk-3-dev \
-          libnotify-bin \
-          libnss3-dev \
+          libcap-dev:armhf \
+          libcups2-dev:armhf \
+          libdbus-1-dev:armhf \
+          libgtk2.0-dev:armhf \
+          libgtk-3-dev:armhf \
+          libnotify-bin:armhf \
+          libnss3-dev:armhf \
           libstdc++6:armhf \
-          libxtst-dev \
-          libxtst6 \
+          libxtst-dev:armhf \
+          libxtst6:armhf \
           python-dev \
           python-gobject \
           libgirepository1.0-dev
@@ -2340,7 +2340,7 @@ jobs:
     <<: *steps-verify-ffmpeg
 
   linux-arm-testing-tests:
-    <<: *machine-linux-arm
+    executor: linux-arm
     environment:
       <<: *env-linux-medium
       <<: *env-arm
@@ -2349,7 +2349,7 @@ jobs:
     <<: *steps-tests
 
   linux-arm64-testing-tests:
-    <<: *machine-linux-arm
+    executor: linux-arm
     environment:
       <<: *env-linux-medium
       <<: *env-arm64
@@ -2487,9 +2487,6 @@ workflows:
              - linux-arm-testing
 
       - linux-arm64-testing
-      - linux-arm64-testing-tests:
-          requires:
-             - linux-arm64-testing
 
       - linux-arm64-testing-gn-check:
           requires:
