@@ -1195,6 +1195,12 @@ steps-tests: &steps-tests
     - *step-fix-known-hosts-linux
     - *step-install-signing-cert-on-mac
     - run:
+        name: Verify proc info on arm
+        command: |
+          if [ "$TARGET_ARCH" == "arm" ] || [ "$TARGET_ARCH" == "arm64" ]; then
+            cat /proc/cpuinfo
+          fi
+    - run:
         name: Run Electron tests
         environment:
           MOCHA_REPORTER: mocha-multi-reporters
