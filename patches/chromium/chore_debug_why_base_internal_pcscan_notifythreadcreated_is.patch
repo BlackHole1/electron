@@ -1,0 +1,55 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: John Kleinschmidt <jkleinsc@electronjs.org>
+Date: Mon, 14 Jun 2021 16:57:25 -0400
+Subject: chore: debug why base::internal::PCScan::NotifyThreadCreated is
+ firing on arm
+
+this is just a test
+
+diff --git a/content/common/partition_alloc_support.cc b/content/common/partition_alloc_support.cc
+index 83907d66931f02bd1585e6c4d395b725f50261c2..0a76b51472a4bcb737dfcdce69ae9e9d2e1ebc6e 100644
+--- a/content/common/partition_alloc_support.cc
++++ b/content/common/partition_alloc_support.cc
+@@ -54,6 +54,7 @@ bool EnablePCScanForMallocPartitionsIfNeeded() {
+ #if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) && defined(PA_ALLOW_PCSCAN)
+   DCHECK(base::FeatureList::GetInstance());
+   if (base::FeatureList::IsEnabled(base::features::kPartitionAllocPCScan)) {
++    LOG(INFO) << "base::features::kPartitionAllocPCScan IS ENABLED, Enabling PC SCAN";
+     base::allocator::EnablePCScan(/*dcscan*/ false);
+     return true;
+   }
+@@ -66,8 +67,12 @@ bool EnablePCScanForMallocPartitionsInBrowserProcessIfNeeded() {
+   DCHECK(base::FeatureList::GetInstance());
+   if (base::FeatureList::IsEnabled(
+           base::features::kPartitionAllocPCScanBrowserOnly)) {
++    LOG(INFO) << "base::features::kPartitionAllocPCScanBrowserOnly is enabled";
+     const bool dcscan_wanted =
+         base::FeatureList::IsEnabled(base::features::kPartitionAllocDCScan);
++    if (dcscan_wanted) {
++      LOG(INFO) << "base::features::kPartitionAllocDCScan is enabled";
++    }
+ #if !defined(PA_STARSCAN_UFFD_WRITE_PROTECTOR_SUPPORTED)
+     CHECK(!dcscan_wanted)
+         << "DCScan is currently only supported on Linux based systems";
+@@ -211,14 +216,21 @@ void PartitionAllocSupport::ReconfigureAfterFeatureListInit(
+ #endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
+ 
+   bool scan_enabled = EnablePCScanForMallocPartitionsIfNeeded();
++  if (scan_enabled) {
++    LOG(INFO) << "SCAN IS ENABLED BASED ON EnablePCScanForMallocPartitionsIfNeeded";
++  }
+   // No specified process type means this is the Browser process.
+   if (process_type.empty()) {
+     scan_enabled = scan_enabled ||
+                    EnablePCScanForMallocPartitionsInBrowserProcessIfNeeded();
++    if (scan_enabled) {
++      LOG(INFO) << "SCAN IS ENABLED process_type.empty() BASED ON  EnablePCScanForMallocPartitionsInBrowserProcessIfNeeded";
++    }
+   }
+   if (scan_enabled) {
+     if (base::FeatureList::IsEnabled(
+             base::features::kPartitionAllocPCScanStackScanning)) {
++      LOG(INFO) << " base::features::kPartitionAllocPCScanStackScanning is ENABLED";
+ #if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
+       base::internal::PCScan::EnableStackScanning();
+       // Notify PCScan about the main thread.
